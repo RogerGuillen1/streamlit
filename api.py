@@ -3,9 +3,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import AIMessage, HumanMessage
 
 # Configuración inicial
-st.set_page_config(page_title="Chatbot Básico", page_icon="🤖")
-st.title("🤖 Chatbot - paso 2 - con LangChain")
-st.markdown("Este es un *chatbot de ejemplo* construido con LangChain + Streamlit.")
+st.set_page_config(page_title="Chatbot Básico Roger", page_icon="🤖")
+st.title("🤖 Chatbot de Roger")
+st.markdown("Hola, soy el chatbot de Roger, trátame mejor que Roger por favor")
 
 with st.sidebar:
     st.header("Configuración del Modelo")
