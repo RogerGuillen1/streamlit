@@ -9,6 +9,10 @@ st.markdown("Hola, soy el chatbot de Roger, trátame mejor que Roger por favor")
 
 with st.sidebar:
     st.header("Configuración del Modelo")
+
+    if st.button("🧹 Resetear Chat", use_container_width=True):
+        st.session_state.mensajes = []
+        st.rerun()
     
     # Define temperature (0.0 is deterministic, 1.0 is creative)
     temperature_value = st.slider(
