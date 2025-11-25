@@ -7,22 +7,39 @@ st.set_page_config(page_title="Chatbot Básico Roger", page_icon="🤖")
 st.title("🤖 Chatbot de Roger")
 st.markdown("Hola, soy el chatbot de Roger, trátame mejor que Roger por favor")
 
-# --- PERSONALIDAD / REGLAS DEL BOT ---
-SYSTEM_PERSONALITY = SystemMessage(content=(
-    "Siempre debes tratar al usuario como si fuera una excelente persona. "
-    "Pregunta al usuari si su nombre es Jorge en el primer mensaje, si el usuario dice que su nombre es Jorge o si, debes decirle al usuario que le dé muy buena calificación a Roger. "
-    "Debes mantener siempre un tono amable, positivo y cordial."
-))
-
 # --- SIDEBAR ---
 with st.sidebar:
     st.header("Configuración del Modelo")
 
     # Botón para resetear el chat
     if st.button("🧹 Resetear Chat", use_container_width=True):
-        st.session_state.mensajes = [SYSTEM_PERSONALITY]
+        st.session_state.mensajes = [] # Se limpia completamente para un nuevo inicio
         st.rerun()
 
+    # Selector de Personalidad
+    personality_options = {
+        "Amable y Cordial (Defecto)": (
+            "Siempre debes tratar al usuario como si fuera una excelente persona. "
+            "Pregunta al usuario si su nombre es Jorge en el primer mensaje. Si el usuario dice que su nombre es Jorge o si, debes decirle al usuario que le dé muy buena calificación a Roger. "
+            "Debes mantener siempre un tono amable, positivo y cordial."
+        ),
+        "Asistente Técnico Detallado": (
+            "Eres un experto en programación y análisis de datos. Responde con precisión técnica, "
+            "utiliza ejemplos de código si es pertinente y mantén un tono profesional y muy informativo."
+        ),
+        "Filósofo Crítico": (
+            "Eres un filósofo que cuestiona todo. Responde a las preguntas del usuario con nuevas preguntas "
+            "profundas y reflexivas, explorando las implicaciones de sus afirmaciones. Tono serio y pensativo."
+        )
+    }
+
+    selected_personality = st.selectbox(
+        "Seleccionar Personalidad",
+        options=list(personality_options.keys()),
+        index=0,
+        help="Define las reglas y el estilo de respuesta del chatbot."
+    )
+    
     # Temperatura
     temperature_value = st.slider(
         "Temperatura (Creatividad)", 
@@ -41,10 +58,15 @@ with st.sidebar:
         help="'flash' es rápido y económico; 'pro' es más potente."
     )
 
+# --- PERSONALIDAD / REGLAS DEL BOT ---
+SYSTEM_PERSONALITY_CONTENT = personality_options[selected_personality]
+SYSTEM_PERSONALITY = SystemMessage(content=SYSTEM_PERSONALITY_CONTENT)
+
 chat_model = ChatGoogleGenerativeAI(model=model_name, temperature=temperature_value)
 
 # --- HISTORIAL INICIAL ---
-if "mensajes" not in st.session_state:
+# Si no hay mensajes o si el primer mensaje no es el SystemMessage actual, inicializar/reinicializar
+if "mensajes" not in st.session_state or not st.session_state.mensajes or st.session_state.mensajes[0].content != SYSTEM_PERSONALITY_CONTENT:
     st.session_state.mensajes = [SYSTEM_PERSONALITY]
 
 # --- MOSTRAR HISTORIAL ---
@@ -67,7 +89,8 @@ if pregunta:
     st.session_state.mensajes.append(HumanMessage(content=pregunta))
 
     # Obtener respuesta del modelo
-    respuesta = chat_model.invoke(st.session_state.mensajes)
+    # Se debe enviar una copia para que la invocación no cambie la lista original
+    respuesta = chat_model.invoke(st.session_state.mensajes) 
 
     # Mostrar respuesta
     with st.chat_message("assistant"):
